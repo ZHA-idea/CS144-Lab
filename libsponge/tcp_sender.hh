@@ -19,18 +19,36 @@ class TCPSender {
   private:
     //! our initial sequence number, the number for our SYN.
     WrappingInt32 _isn;
+    uint64_t _recent_abs_ackno;
+    uint64_t _l{0};//left flying
+    uint64_t _r{0};//right flying
 
     //! outbound queue of segments that the TCPSender wants sent
     std::queue<TCPSegment> _segments_out{};
+    std::queue<TCPSegment> _segments_outstanding{};
+    std::queue<uint64_t>   _seqno_not_ack{};
 
     //! retransmission timer for the connection
     unsigned int _initial_retransmission_timeout;
-
+    unsigned int _retransmission_timeout;
+    unsigned int _time_remain;
     //! outgoing stream of bytes that have not yet been sent
     ByteStream _stream;
 
     //! the (absolute) sequence number for the next byte to be sent
     uint64_t _next_seqno{0};
+
+    size_t _window_size;//initialized as 1
+
+    size_t _bytes_in_flight;
+
+    //! resend timer status
+    bool _timer_running{false};
+    bool _syn_flag{false};
+    bool _fin_flag{false};
+    bool _win_zero_flag{false};
+    bool _fin_acked{false};
+    unsigned int _resend_times{0};//times
 
   public:
     //! Initialize a TCPSender
@@ -77,7 +95,6 @@ class TCPSender {
     //! (ackno and window size) before sending.
     std::queue<TCPSegment> &segments_out() { return _segments_out; }
     //!@}
-
     //! \name What is the next sequence number? (used for testing)
     //!@{
 
@@ -87,6 +104,7 @@ class TCPSender {
     //! \brief relative seqno for the next byte to be sent
     WrappingInt32 next_seqno() const { return wrap(_next_seqno, _isn); }
     //!@}
+
 };
 
 #endif  // SPONGE_LIBSPONGE_TCP_SENDER_HH

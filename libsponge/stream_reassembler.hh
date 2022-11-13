@@ -5,6 +5,12 @@
 
 #include <cstdint>
 #include <string>
+#include <list>
+#include <utility>
+#include <iterator>
+#include <map>
+#include <set>
+#include <vector>
 
 //! \brief A class that assembles a series of excerpts from a byte stream (possibly out of order,
 //! possibly overlapping) into an in-order byte stream.
@@ -14,6 +20,17 @@ class StreamReassembler {
 
     ByteStream _output;  //!< The reassembled in-order byte stream
     size_t _capacity;    //!< The maximum number of bytes
+    size_t _assembled_bytes;
+    size_t _stored_bytes;
+    std::list<std::pair<std::string, size_t>> _str_to_assemble;
+    std::map<size_t, std::list<std::pair<std::string, size_t>>::iterator> _existed;
+    bool _eof;
+    std::set<std::pair<size_t, size_t>> _used_byte;
+
+    using Type1 = std::set<std::pair<size_t, size_t>>::iterator;
+    using Type2 = std::vector<std::pair<size_t, size_t>>;
+
+    void remove_segement(const Type1 &it, size_t l, size_t r, Type2 &_erase, Type2 &_insert);
 
   public:
     //! \brief Construct a `StreamReassembler` that will store up to `capacity` bytes.
@@ -46,6 +63,10 @@ class StreamReassembler {
     //! \brief Is the internal state empty (other than the output stream)?
     //! \returns `true` if no substrings are waiting to be assembled
     bool empty() const;
+
+    size_t head_index() const { return _assembled_bytes; }
+
+    bool input_ended() const { return _output.input_ended(); }
 };
 
 #endif  // SPONGE_LIBSPONGE_STREAM_REASSEMBLER_HH

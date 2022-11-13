@@ -15,7 +15,7 @@
 class Buffer {
   private:
     std::shared_ptr<std::string> _storage{};
-    size_t _starting_offset{};
+    size_t _starting_offset{0};
 
   public:
     Buffer() = default;

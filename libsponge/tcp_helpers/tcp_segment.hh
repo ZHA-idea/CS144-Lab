@@ -7,7 +7,7 @@
 #include <cstdint>
 
 //! \brief [TCP](\ref rfc::rfc793) segment
-class TCPSegment {
+class  TCPSegment {
   private:
     TCPHeader _header{};
     Buffer _payload{};
